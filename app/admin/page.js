@@ -251,8 +251,39 @@ export default function AdminPanel() {
               <textarea className={styles.input} rows="3" value={raffleForm.description} onChange={e => setRaffleForm({...raffleForm, description: e.target.value})} placeholder="Detalles de los premios..."></textarea>
             </div>
             <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-              <label>URL de Imagen del Premio (Opcional)</label>
-              <input type="url" className={styles.input} value={raffleForm.imageUrl} onChange={e => setRaffleForm({...raffleForm, imageUrl: e.target.value})} placeholder="https://ejemplo.com/imagen.jpg" />
+              <label>Imagen de Portada (Sube una foto)</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                className={styles.input} 
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const img = new Image();
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        setRaffleForm({...raffleForm, imageUrl: dataUrl});
+                      };
+                      img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }} 
+              />
+              {raffleForm.imageUrl && (
+                <div style={{ marginTop: '1rem' }}>
+                  <img src={raffleForm.imageUrl} alt="Preview" style={{ maxWidth: '200px', borderRadius: '8px' }} />
+                </div>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Precio por Número ($)</label>
